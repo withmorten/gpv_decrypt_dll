@@ -73,6 +73,7 @@ struct Campaign
 		else if (streq(campaign_name, "aoecam1.aoe2campaign")
 			|| streq(campaign_name, "aoecam2.aoe2campaign")
 			|| streq(campaign_name, "aoecam3.aoe2campaign")
+			|| streq(campaign_name, "aoecam4.aoe2campaign")
 			|| streq(campaign_name, "pcam1.aoe2campaign")
 			|| streq(campaign_name, "pcam2.aoe2campaign")
 			|| streq(campaign_name, "pcam3.aoe2campaign"))
