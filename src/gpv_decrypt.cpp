@@ -124,6 +124,8 @@ void gpv_decrypt_hook(uint64_t magic, byte *data, long size)
 
 void init_gpv_decrypt()
 {
+	CreateDirectory("gpv_decrypt", NULL);
+
 	// hook the constructor to get some initial data
 	{
 		void *address = (void *)CAMPAIGN_CTOR_CALLLOC;
