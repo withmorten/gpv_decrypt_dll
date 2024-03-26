@@ -48,8 +48,3 @@ project "gpv_decrypt"
 	files { "vendor/ModUtils/Trampoline.h" }
 	files { "vendor/ModUtils/Patterns.cpp" }
 	files { "vendor/ModUtils/Patterns.h" }
-
-	-- includedirs { "vendor/minhook/include" }
-	-- includedirs { "vendor/minhook/src" }
-	-- files { "vendor/minhook/include/**" }
-	-- files { "vendor/minhook/src/**" }
