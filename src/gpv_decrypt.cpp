@@ -110,7 +110,6 @@ struct Campaign
 	}
 };
 
-
 typedef void (*gpv_decrypt)(uint64_t, byte *, long);
 gpv_decrypt gpv_decrypt_orig = (gpv_decrypt)GPV_DECRYPT_ADDRESS;
 
