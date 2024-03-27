@@ -13,7 +13,7 @@ workspace "gpv_decrypt"
 	characterset ("MBCS")
 	staticruntime "on"
 	links { "legacy_stdio_definitions" }
-	defines { "WIN32_LEAN_AND_MEAN", "VC_EXTRALEAN", "WIN32_LEAN_AND_MEAN", "_CRT_SECURE_NO_WARNINGS", "_CRT_NONSTDC_NO_DEPRECATE" }
+	defines { "WIN32_LEAN_AND_MEAN", "VC_EXTRALEAN", "WIN32_LEAN_AND_MEAN", "_CRT_SECURE_NO_WARNINGS", "_CRT_NONSTDC_NO_DEPRECATE", "NOMINMAX" }
 	cppdialect "C++17"
 
 	filter "configurations:Debug"
