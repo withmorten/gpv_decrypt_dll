@@ -11,7 +11,6 @@ workspace "gpv_decrypt"
 	targetdir "bin/%{cfg.buildcfg}"
 
 	characterset ("MBCS")
-	toolset ("v141_xp")
 	staticruntime "on"
 	links { "legacy_stdio_definitions" }
 	defines { "WIN32_LEAN_AND_MEAN", "VC_EXTRALEAN", "WIN32_LEAN_AND_MEAN", "_CRT_SECURE_NO_WARNINGS", "_CRT_NONSTDC_NO_DEPRECATE" }
