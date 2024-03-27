@@ -4,15 +4,6 @@
 #include <Trampoline.h>
 #include <Patterns.h>
 
-long fsize(FILE *stream)
-{
-	long pos = ftell(stream);
-	fseek(stream, 0, SEEK_END);
-	long size = ftell(stream);
-	fseek(stream, pos, SEEK_SET);
-	return size;
-}
-
 using namespace hook;
 using namespace Memory::VP;
 
@@ -38,7 +29,6 @@ char campaign_gpv_path[1024];
 char campaign_decrypt_path[1024];
 bool is_gpv;
 bool pompeii;
-long campaign_size;
 
 struct Campaign;
 
@@ -86,13 +76,10 @@ struct Campaign
 			strscpy(campaign_name, "");
 			is_gpv = false;
 			pompeii = false;
-			campaign_size = 0;
 		}
 
 		if (is_gpv)
 		{
-			// printf("%s\n", campaign_name);
-
 			strscpy(campaign_gpv_path, pompeii ? "modes\\Pompeii\\resources\\_common\\campaign\\" : "resources\\_common\\campaign\\");
 			strscat(campaign_gpv_path, campaign_name);
 			strscat(campaign_gpv_path, ".gpv");
@@ -100,11 +87,7 @@ struct Campaign
 			strscpy(campaign_decrypt_path, "gpv_decrypt\\");
 			strscat(campaign_decrypt_path, campaign_name);
 
-			FILE *f = fopen(campaign_gpv_path, "rb");
-			campaign_size = fsize(f) - 4 - sizeof(size_t); // sizeof(magic)
-			fclose(f);
-
-			printf("%s, %d\n", campaign_gpv_path, campaign_size);
+			printf("%s\n", campaign_gpv_path);
 		}
 
 		return Campaign__Constructor(this, pResult, filePath, pDlcCampaign);
