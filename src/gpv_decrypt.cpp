@@ -33,7 +33,7 @@ bool pompeii;
 struct Campaign;
 
 typedef Campaign *(*CampaignConstructor)(Campaign *, uint64_t, FilePath *, uint64_t);
-CampaignConstructor Campaign__Constructor = (CampaignConstructor)CAMPAIGN_CTOR_ADDRESS;
+CampaignConstructor Campaign__Constructor;
 
 struct Campaign
 {
@@ -95,7 +95,7 @@ struct Campaign
 };
 
 typedef void (*gpv_decrypt)(uint64_t, byte *, long);
-gpv_decrypt gpv_decrypt_orig = (gpv_decrypt)GPV_DECRYPT_ADDRESS;
+gpv_decrypt gpv_decrypt_orig;
 
 void gpv_decrypt_hook(uint64_t magic, byte *data, long size)
 {
@@ -106,23 +106,89 @@ void gpv_decrypt_hook(uint64_t magic, byte *data, long size)
 	fclose(f);
 }
 
+uintptr_t CAMPAIGN_CTOR_ADDRESS;
+uintptr_t CAMPAIGN_CTOR_CALLLOC;
+uintptr_t GPV_DECRYPT_ADDRESS;
+uintptr_t GPV_DECRYPT_CALLLOC;
+
+bool fill_addresses(int32_t version)
+{
+	switch (version)
+	{
+	case 107882:
+		CAMPAIGN_CTOR_ADDRESS = 0x0000000140EDD430;
+		CAMPAIGN_CTOR_CALLLOC = 0x0000000141012769;
+		GPV_DECRYPT_ADDRESS = 0x0000000141718DD0;
+		GPV_DECRYPT_CALLLOC = 0x0000000140EDDD7D;
+
+		return true;
+
+	case 108769:
+		CAMPAIGN_CTOR_ADDRESS = 0x0000000140EDECB0;
+		CAMPAIGN_CTOR_CALLLOC = 0x0000000141013FF9;
+		GPV_DECRYPT_ADDRESS = 0x000000014171AF90;
+		GPV_DECRYPT_CALLLOC = 0x0000000140EDF5FD;
+
+		return true;
+	}
+
+	return false;
+}
+
 void init_gpv_decrypt()
 {
 	CreateDirectory("gpv_decrypt", NULL);
 
-	// hook the constructor to get some initial data
-	{
-		void *address = (void *)CAMPAIGN_CTOR_CALLLOC;
-		auto trampoline = Trampoline::MakeTrampoline(address);
+	bool version_found = false;
 
-		InjectHook(address, trampoline->Jump(&Campaign::Constructor));
+	{
+		auto ver_string_pattern = pattern("20 46 69 6E 61 6C 20 53 74 65 61 6D 20"); // " Final Steam "
+
+		if (ver_string_pattern.count(1).size() == 1)
+		{
+			char *ver_string; for (ver_string = (char *)ver_string_pattern.get_first(0); *ver_string; ver_string--); ver_string++;
+
+			// TODO check PUP exe
+			// 101.102.42346.0 107882 Final Steam 20240312.01 ADO
+			// 101.102.43233.0 108769 Final Steam 20240321.03 ADO
+
+			int32_t version;
+
+			if (sscanf(ver_string, "%*d.%*d.%*d.%*d %d Final Steam %*s.%*s %*s", &version) == 1)
+			{
+				printf("de2 version: %d\n", version);
+
+				version_found = fill_addresses(version);
+			}
+		}
 	}
 
-	// then hook the function that decrypts the gpv ...
+	if (version_found)
 	{
-		void *address = (void *)GPV_DECRYPT_CALLLOC;
-		auto trampoline = Trampoline::MakeTrampoline(address);
+		printf("version found, hooking ...\n");
 
-		InjectHook(address, trampoline->Jump(gpv_decrypt_hook));
+		// hook the constructor to get some initial data
+		{
+			Campaign__Constructor = (CampaignConstructor)CAMPAIGN_CTOR_ADDRESS;
+
+			void *address = (void *)CAMPAIGN_CTOR_CALLLOC;
+			auto trampoline = Trampoline::MakeTrampoline(address);
+
+			InjectHook(address, trampoline->Jump(&Campaign::Constructor));
+		}
+
+		// then hook the function that decrypts the gpv ...
+		{
+			gpv_decrypt_orig = (gpv_decrypt)GPV_DECRYPT_ADDRESS;
+
+			void *address = (void *)GPV_DECRYPT_CALLLOC;
+			auto trampoline = Trampoline::MakeTrampoline(address);
+
+			InjectHook(address, trampoline->Jump(gpv_decrypt_hook));
+		}
+	}
+	else
+	{
+		printf("unknown version\n");
 	}
 }
