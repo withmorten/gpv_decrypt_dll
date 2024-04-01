@@ -111,19 +111,30 @@ uintptr_t CAMPAIGN_CTOR_CALLLOC;
 uintptr_t GPV_DECRYPT_ADDRESS;
 uintptr_t GPV_DECRYPT_CALLLOC;
 
-bool fill_addresses(int32_t version)
+bool fill_addresses(char *version_str)
 {
-	switch (version)
+	if (streq(version_str, "101.102.42346.0 107882 Final Steam 20240312.01 ADO"))
 	{
-	case 107882:
 		CAMPAIGN_CTOR_ADDRESS = 0x0000000140EDD430;
 		CAMPAIGN_CTOR_CALLLOC = 0x0000000141012769;
 		GPV_DECRYPT_ADDRESS = 0x0000000141718DD0;
 		GPV_DECRYPT_CALLLOC = 0x0000000140EDDD7D;
 
 		return true;
+	}
+	
+	if (streq(version_str, "101.102.43233.0 108769 Final Preview Steam 20240321.02 ADO"))
+	{
+		CAMPAIGN_CTOR_ADDRESS = 0x0000000140EDD030;
+		CAMPAIGN_CTOR_CALLLOC = 0x0000000141012399;
+		GPV_DECRYPT_ADDRESS = 0x0000000141719200;
+		GPV_DECRYPT_CALLLOC = 0x0000000140EDD97D;
 
-	case 108769:
+		return true;
+	}
+
+	if (streq(version_str, "101.102.43233.0 108769 Final Steam 20240321.03 ADO"))
+	{
 		CAMPAIGN_CTOR_ADDRESS = 0x0000000140EDECB0;
 		CAMPAIGN_CTOR_CALLLOC = 0x0000000141013FF9;
 		GPV_DECRYPT_ADDRESS = 0x000000014171AF90;
@@ -135,6 +146,11 @@ bool fill_addresses(int32_t version)
 	return false;
 }
 
+char *strstart(char *str)
+{
+	char *ret; for (ret = str; *ret; ret--); return ++ret;
+}
+
 void init_gpv_decrypt()
 {
 	CreateDirectory("gpv_decrypt", NULL);
@@ -143,23 +159,15 @@ void init_gpv_decrypt()
 
 	{
 		auto ver_string_pattern = pattern("20 46 69 6E 61 6C 20 53 74 65 61 6D 20"); // " Final Steam "
+		auto ver_string_pattern_pup = pattern("20 46 69 6E 61 6C 20 50 72 65 76 69 65 77 20 53 74 65 61 6D 20"); // " Final Preview Steam "
 
 		if (ver_string_pattern.count(1).size() == 1)
 		{
-			char *ver_string; for (ver_string = (char *)ver_string_pattern.get_first(0); *ver_string; ver_string--); ver_string++;
-
-			// TODO check PUP exe
-			// 101.102.42346.0 107882 Final Steam 20240312.01 ADO
-			// 101.102.43233.0 108769 Final Steam 20240321.03 ADO
-
-			int32_t version;
-
-			if (sscanf(ver_string, "%*d.%*d.%*d.%*d %d Final Steam %*s.%*s %*s", &version) == 1)
-			{
-				printf("de2 version: %d\n", version);
-
-				version_found = fill_addresses(version);
-			}
+			version_found = fill_addresses(strstart((char *)ver_string_pattern.get_first(0)));
+		}
+		else if (ver_string_pattern_pup.count(1).size() == 1)
+		{
+			version_found = fill_addresses(strstart((char *)ver_string_pattern_pup.get_first(0)));
 		}
 	}
 
